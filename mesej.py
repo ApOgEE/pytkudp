@@ -107,6 +107,8 @@ class Mesej:
             except socket.error as err:
                 messagebox.showerror('Socket Error', '{} - {}'.format(err.errno, err.strerror))
                 self.penerima = None
+                self.sock.close()
+                self.sock = None
         else:
             # kalau dah bind, stop thread penerima
             if self.penerima:
