@@ -5,6 +5,7 @@ from threading import Thread
 import socket
 import select
 import tkinter as tk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 
 class Penerima(Thread):
@@ -51,11 +52,6 @@ class Mesej:
 
         self.setup_gui(config)
 
-    def masukkanList(self):
-        mesej = self.Mesej.get()
-        if len(mesej) > 0:
-            self.lstMasuk.insert(0,mesej)
-
     def clearkanMesej(self):
         self.lstMasuk.delete(0,tk.END)
 
@@ -100,13 +96,17 @@ class Mesej:
     def toggleBind(self):
         if self.penerima is None:
             # kalau belum bind, set bind dan toggle butang kepada stop
-            self.btnBind.config(text='Stop')
-            if self.sock == None:
+            if self.sock is None:
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.penerima = Penerima(self.sock, self)
-            self.penerima.bind(self.RemoteIP.get(), int(self.LocalPort.get()))
-            self.penerima.start()
 
+            try:
+                self.penerima = Penerima(self.sock, self)
+                self.penerima.bind(self.RemoteIP.get(), int(self.LocalPort.get()))
+                self.penerima.start()
+                self.btnBind.config(text='Stop')
+            except socket.error as err:
+                messagebox.showerror('Socket Error', '{} - {}'.format(err.errno, err.strerror))
+                self.penerima = None
         else:
             # kalau dah bind, stop thread penerima
             if self.penerima:
